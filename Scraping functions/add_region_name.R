@@ -1,13 +1,4 @@
-add_region_name <- function(table, doc) {
-        reg_codes <- c("адыг", "алтайск", "алтай", "башкорто", "бурят", "дагест", "ингушет", "кабардин", "калмык", "карачаев",
-                       "карел", "коми", "мари", "мордов", "якут", "северн", "татарс", "тыва", "удмурт", "хакас", "чеч", "чуваш",
-                       "краснодар", "краснояр", "примор", "ставропол", "хабаров", "амур", "архангел", "астрахан", "белгород",
-                       "брянс", "владимир", "волгоград", "вологод", "воронеж", "иванов", "иркутс", "калинин", "калужс",
-                       "кемер", "киров", "костром", "курган", "курск", "ленин", "липецк", "магадан", "московско", "московска",
-                       "мурман", "нижегород", "новгород", "новосиб", "омск", "оренбург", "орлов", "пензен", "псков", "ростов",
-                       "рязан", "самар", "саратов", "сахалин", "свердлов", "смоленск", "тамбов", "тверск", "томск",
-                       "тульск", "тюменск", "ульяновск", "челябинск", "ярославск", "санкт", "еврей", "ненец", "ханты", "чукот",
-                       "-ненец", "перм", "камчат", "забайкал", "крым", "севастополь")
+add_region_name <- function(table, doc, intrm) {
         reg_names <- c("Адыгея", "Алтай", "Башкортостан", "Бурятия", "Дагестан", "Ингушетия", "Кабардино-Балкария",
                        "Калмыкия", "Карачаево-Черкессия", "Карелия", "Коми", "Марий Эл", "Мордовия", "Якутия", "Северная Осетия",
                        "Татарстан", "Тыва", "Удмуртия", "Хакасия", "Чечня", "Чувашия", "Алтайский край", "Краснодарский край",
@@ -23,62 +14,40 @@ add_region_name <- function(table, doc) {
                        "Ульяновская область", "Челябинская область", "Ярославская область", "Москва", "Санкт-Петербург", "Еврейская АО",
                        "Ненецкий АО", "Ханты-Мансийский АО", "Чукотский АО", "Ямало-Ненецкий АО", "Пермский край", "Камчатский край",
                        "Забайкальский край", "Крым", "Севастополь")
-        izbirkom_name_node <- html_nodes(doc, xpath = "/html/body/table[3]/tbody/tr[1]/td/a")
-        izbirkom_name <- html_text(izbirkom_name_node[[1]])
-        location <- str_locate(izbirkom_name, "Избирательная комиссия ")
-        izbirkom_name <- str_sub(izbirkom_name, start = location[2] + 1)
-        izbirkom_name <- tolower(izbirkom_name)
-        for (i in reg_codes) {
-                if (grepl(i, izbirkom_name)) {
-                        if (i == "московска") {
-                                i <- "москва"
-                        }
-                        for (j in tolower(reg_names)) {
-                                if (grepl(i, j)) {
-                                    table$region <- rep_len(j, length.out = length(table[,1]))    
-                                }
-                        }
-                }
+        izbirkom_name_node <- html_nodes(doc, xpath = paste("/html/body/table[", as.character(intrm), "]/tbody/tr[1]/td/a",sep = ""))
+        izbirkom_name <- html_text(izbirkom_name_node[[1]]) %>% tolower()
+        location <- str_locate(izbirkom_name, "избирательная комиссия")
+        if (location[1] == 1) {
+                izbirkom_name <- str_sub(izbirkom_name, start = location[2] + 2)
+        } else {
+                izbirkom_name <- str_sub(izbirkom_name, end = location[1] - 2)
         }
-        table
-}
-
-
-add_region_name <- function(table, doc) {
-        reg_names <- c("Адыгея", "Алтай", "Башкортостан", "Бурятия", "Дагестан", "Ингушетия", "Кабардино-Балкария",
-                       "Калмыкия", "Карачаево-Черкессия", "Карелия", "Коми", "Марий Эл", "Мордовия", "Якутия", "Северная Осетия",
-                       "Татарстан", "Тыва", "Удмуртия", "Хакасия", "Чечня", "Чувашия", "Алтайский край", "Краснодарский край",
-                       "Красноярский край", "Приморский край", "Ставропольский край", "Хабаровский край", "Амурская область",
-                       "Архангельская область", "Астраханская область", "Белгородская область", "Брянская область", "Владимирская область",
-                       "Волгоградская область", "Вологодская область", "Воронежская область", "Ивановская область", "Иркутская область",
-                       "Калининградская область", "Калужская область", "Кемеровская область", "Кировская область", "Костромская область",
-                       "Курганская область", "Курская область", "Ленинградская область", "Липецкая область", "Магаданская область",
-                       "Московская область", "Мурманская область", "Нижегородская область", "Новгородская область", "Новосибирская область",
-                       "Омская область", "Оренбургская область", "Орловская область", "Пензенская область", "Псковская область", "Ростовская область",
-                       "Рязанская область", "Самарская область", "Саратовская область", "Сахалинская область", "Свердловская область",
-                       "Смоленская область", "Тамбовская область", "Тверская область", "Томская область", "Тульская область", "Тюменская область",
-                       "Ульяновская область", "Челябинская область", "Ярославская область", "Москва", "Санкт-Петербург", "Еврейская АО",
-                       "Ненецкий АО", "Ханты-Мансийский АО", "Чукотский АО", "Ямало-Ненецкий АО", "Пермский край", "Камчатский край",
-                       "Забайкальский край", "Крым", "Севастополь")
-        izbirkom_name_node <- html_nodes(doc, xpath = "/html/body/table[3]/tbody/tr[1]/td/a")
-        izbirkom_name <- html_text(izbirkom_name_node[[1]])
-        location <- str_locate(izbirkom_name, "Избирательная комиссия ")
-        izbirkom_name <- str_sub(izbirkom_name, start = location[2] + 1)
-        izbirkom_name <- tolower(izbirkom_name)
         reg_names <- tolower(reg_names)
         if (grepl("республики", izbirkom_name)) {
-                location <- str_locate(izbirkom_name, "республики ")
-                izbirkom_name <- str_sub(izbirkom_name, start = location[2] + 1)
+                location <- str_locate(izbirkom_name, "республики")
+                if (location[1] == 1) {
+                        izbirkom_name <- str_sub(izbirkom_name, start = location[2] + 2)
+                } else {
+                        izbirkom_name <- str_sub(izbirkom_name, end = location[1] - 2)
+                }
         }
         if (grepl("московска", izbirkom_name)) {
                 table$region <- rep_len("Москва", length.out = length(table[,1]))
         } else {
-                for (j in seq_len(str_length(izbirkom_name))) {
-                        exm <- str_sub(izbirkom_name, start = 1, end = j)
-                        if (length(reg_names[grep(exm, reg_names)]) == 1) {
-                                table$region <- rep_len(reg_names[grep(exm, reg_names)], length.out = length(table[,1]))
+                if(grepl("алтай", izbirkom_name)) {
+                        if (grepl("алтайск", izbirkom_name)) {
+                                table$region <- "алтайский край"
+                        } else {
+                                table$region <- "алтай"
+                        }
+                } else {
+                        for (j in seq_len(str_length(izbirkom_name))) {
+                                exm <- str_sub(izbirkom_name, start = 1, end = j)
+                                if (length(reg_names[grep(exm, reg_names)]) == 1) {
+                                        table$region <- rep_len(reg_names[grep(exm, reg_names)], length.out = length(table[,1]))
+                                }
                         }
                 }
-        }
+        } 
         table
 }
